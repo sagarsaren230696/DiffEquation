@@ -1,0 +1,63 @@
+cmake_minimum_required(VERSION 3.10)
+
+# Set project name and specify C++ version
+project(ida_dae_example LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 11)
+
+# ------------------------------------------------------------------------------
+
+# Specify the path to SUNDIALS header files
+set(SUNDIALS_INCLUDE_DIR
+  /home/ssaren/include
+  CACHE PATH "Location of SUNDIALS header files")
+
+# Specify the path to SUNDIALS libraries
+set(SUNDIALS_LIBRARY_DIR
+  /home/ssaren/lib
+  CACHE PATH "Location of SUNDIALS libraries")
+
+find_library(SUNDIALS_CORE_LIB
+  sundials_core ${SUNDIALS_LIBRARY_DIR}
+  DOC "SUNDIALS core library")
+
+find_library(SUNDIALS_SOLVER_LIB
+  sundials_ida ${SUNDIALS_LIBRARY_DIR}
+  DOC "IDA library")
+find_library(SUNDIALS_NVEC_LIB
+  sundials_nvecserial ${SUNDIALS_LIBRARY_DIR}
+  DOC "NVECTOR_SERIAL library")
+
+find_library(SUNDIALS_MANYVEC_LIB
+  sundials_nvecmanyvector ${SUNDIALS_LIBRARY_DIR}
+  DOC "NVECTOR_MANYVECTOR library")
+
+# Set additional libraries
+set(SUNDIALS_EXTRA_LIBS  -lm CACHE STRING "Additional libraries")
+
+# For SUNDIALS module examples the solver library is not needed
+if(NOT SUNDIALS_SOLVER_LIB)
+  set(SUNDIALS_SOLVER_LIB "")
+endif()
+
+# List of SUNDIALS libraries
+set(SUNDIALS_LIBRARIES
+  -L${SUNDIALS_LIBRARY_DIR}
+  ${SUNDIALS_SOLVER_LIB}
+  ${SUNDIALS_NVEC_LIB}
+  ${SUNDIALS_MANYVEC_LIB}
+  ${SUNDIALS_CORE_LIB}
+  ${SUNDIALS_EXTRA_LIBS})
+
+# Include the current directory
+include_directories(.)
+
+# ------------------------------------------------------------------------------
+
+# Add the executable
+add_executable(ida_dae_example ida_dae_example.cpp)
+
+# directories to include
+target_include_directories(ida_dae_example PRIVATE ${SUNDIALS_INCLUDE_DIR})
+
+# Link SUNDIALS libraries to the executable
+target_link_libraries(ida_dae_example ${SUNDIALS_LIBRARIES})
